@@ -34,8 +34,13 @@ colnames(design) <- dn
 
 
 ## define the list of possible comparisons. Though why it's done here I have no idea. 
-#ct<-data.frame(t(ct))
-#dn<-unlist(lapply(rownames(ct),function(x){paste0(x,unique(as.numeric(ct[x,])))}))
 eg<-expand.grid(dn,dn); eg2<-eg[eg[,1]!=eg[,2],]
 eg3<-paste(eg2[,1],"-",eg2[,2])
 eg4<-c("all possible", eg3, "bespoke")
+
+geneListsFile<-"geneLists.csv"
+#read.table(geneListsFile, fill = TRUE,sep=",") # 1 column
+ncol <- max(count.fields(geneListsFile, sep = ","))
+geneLists<-read.csv(geneListsFile, fill = TRUE, header = FALSE, row.names=1, col.names = paste0("V", seq_len(ncol)))
+choices = setNames(rownames(geneLists),rownames(geneLists))
+
