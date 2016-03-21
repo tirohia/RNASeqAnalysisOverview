@@ -7,49 +7,28 @@ shinyUI(pageWithSidebar(
 
 conditionalPanel(
   condition = "input.seltab == 'HM'", 
-
-
-      selectInput("order", "Heatmap column order:", selected="No",
-                  list("No rearrangement" = "No",
-                  "Cluster Columns" = "hc",
-                  "Heatmap PC1" = "HM1",
-                      "Heatmap centroid" = "HMC"
-                       
-                       )),  
+    selectInput("order", "Heatmap column order:", 
+                selected="No",
+                list("No rearrangement" = "No","Cluster Columns" = "hc","Heatmap PC1" = "HM1","Heatmap centroid" = "HMC")
+    ),  
                        
    	selectInput("list2", "RNAs to use:",
                 list("List of genes (need ≥ 2)" = "user",
-                "Differential expression analysis" = "Differential_expression",
-                "Key Immune Gene sets" = "Key_Immune"
-                )),
+                     "Differential expression analysis" = "Differential_expression",
+                     "Key Immune Gene sets" = "Key_Immune"
+                )
+    ),
                      
-                    conditionalPanel(
-                      condition = "input.list2 == 'Key_Immune'",
-                      selectInput("list", "Immune gene sets to use:",  choices)),
-                      #selectInput("list", "Immune gene sets to use:",
-                      #  list("Miller_Immune_B/P" = "Miller_GB_Immune_B/P",
-                      #    "Miller_Immune_T/NK" = "Miller_GB_Immune_T/NK",
-      #             "Miller_Immune_M/D" = "Miller_GB_Immune_M/D",                
-      #               "TH1 Immune Response" = "th1",
-      #               "Stoll_IF gamma" = "Stoll_IFgamma_pr_T",
-      #               "GO: NFKB" = "GO:0007249_NFKB",
-      #              "GO: Inflammatory response" = "GO:0006954_inflammatory_response",
-      #              "IRIS B Cell" = "B_Cell",
-      #               "IRIS Dendritic_Cell" = "Dendritic_Cell",
-      #              "IRIS Lymphoid" = "Lymphoid",
-      #              "IRIS Monocyte" = "Monocyte",
-      #              "IRIS Myeloid" = "Myeloid",
-      #              "IRIS Neutrophil" = "Neutrophil",
-      #              "IRIS NK_Cell" = "NK_Cell",
-      #              "IRIS T_Cell" = "T_Cell",
-      #              "Sig: CD44 Sig" = "s2",
-                    #"Sig: IFN" = "s11"))),
-                     
-conditionalPanel(
+    conditionalPanel(
+      condition = "input.list2 == 'Key_Immune'",
+      selectInput("list", "Immune gene sets to use:",  choices)
+    ),
+               
+    conditionalPanel(
       condition = "input.list2 == 'user'",
-      textInput("genes","Gene list", 
-                value = "IL1A IL1B IL1F6 IL1R1 IL1RN")
-      )),
+      textInput("genes","Gene list",value = "IL1A IL1B IL1F6 IL1R1 IL1RN")
+    )
+),
 
 
 conditionalPanel(
