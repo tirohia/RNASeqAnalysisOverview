@@ -103,7 +103,7 @@ return(f)
 })
 
 # +/- log2 Transform  - reads in pre.expDat()
-######### This is the surce of expDat() {trimmed and normalised expression data} that is used extensively later #########
+######### expDat is short for trimmed and normalised expression data. 
 expDat <- reactive({
 	if(input$l2=="Yes"){g<-log2(pre.expDat()+1)} else {g<-pre.expDat()}
 	  return(g)
@@ -203,8 +203,8 @@ if(input$Anal.Type=="EdgeR"){
   }
   
   if(input$wc!="all possible") {
-    DEgenes <- rownames(topTags(tr, n=input$max.number, adjust.method="BH", sort.by="PValue", p.value=input$pSlider))
     tr <- glmTreat(fit, contrast=cm() , lfc=input$lfcSlider)   	
+    DEgenes <- rownames(topTags(tr, n=input$max.number, adjust.method="BH", sort.by="PValue", p.value=input$pSlider))
     if (length(DEgenes > 0)){
       g.out <- DEgenes
     }
@@ -242,44 +242,41 @@ setwd(file.path(getwd()))
 })
 
 output$pca <- renderPlot({ 
-  counts.pca <- prcomp(t(log(e+1)),retx=TRUE)
-  colList<-c("red","red","red","red","blue","blue","blue","blue","green","green","green","green")
-  colList<-c("red","blue","green","orange","red","blue","green","orange","red","blue","green","orange")
+  counts.pca <- prcomp(t(expDat()),retx=TRUE)
+  colList<-as.numeric(ct[1,]*5)
   plot(counts.pca$x[,1],counts.pca$x[,3],pch=19,col =colList, xlab="PC 1",ylab="PC2")
+  legend("top","right",colnames(design),pch = 20,col=unique(colList))
 })
 
- output$m.sd <- renderPlot({   
+output$m.sd <- renderPlot({   
 #xlim=range(0:input$xslid2/100*input$xslid/100*max(rowMeans(expDat())))
-xlim<-range(0:max(rowMeans(expDat())))
-plot(rowMeans(expDat()),(rowSds(as.matrix(expDat()))/rowMeans(expDat())), xlim=xlim, pch=".", col="blue", main="Coefficient of variation relationship to mean", xlab="Gene Mean", ylab="Coefficient of Variation")
+  xlim<-range(0:max(rowMeans(expDat())))
+  plot(rowMeans(expDat()),(rowSds(as.matrix(expDat()))/rowMeans(expDat())), xlim=xlim, pch=".", col="blue", main="Coefficient of variation relationship to mean", xlab="Gene Mean", ylab="Coefficient of Variation")
 })
 
- output$m.hist <- renderPlot({   
-   
- 	#PexpDat<-expDat()[rowMeans(expDat())<=input$xslid2/100*input$xslid/100*max(rowMeans(expDat())),]
-   PexpDat<-expDat()[rowMeans(expDat())<=max(rowMeans(expDat())),]
-plot(hist(rowMeans(PexpDat), breaks=100), main="Histogram of gene means", xlab="Gene Mean", col="blue")
+output$m.hist <- renderPlot({   
+  PexpDat<-expDat()[rowMeans(expDat())<=max(rowMeans(expDat())),]
+  plot(hist(rowMeans(PexpDat), breaks=100), main="Histogram of gene means", xlab="Gene Mean", col="blue")
 })
 
-  output$gene.cor <- renderPlot({    
-nr<-nrow(expDat())
-s<-sample(nr, nr/100,replace = FALSE)
-c.g<-cor(t(expDat()[s,]))
-plot(density(c.g, na.rm =T), col="blue", xlab="Pearson's correlation between genes", main="Correlation structure of a randon 1% of genes"); abline(v=0,lty=2,col="grey")
+output$gene.cor <- renderPlot({    
+  nr<-nrow(expDat())
+  s<-sample(nr, nr/100,replace = FALSE)
+  c.g<-cor(t(expDat()[s,]))
+  plot(density(c.g, na.rm =T), col="blue", xlab="Pearson's correlation between genes", main="Correlation structure of a randon 1% of genes"); abline(v=0,lty=2,col="grey")
 })
 
-  output$distrs <- renderPlot({ 
-nr<-nrow(expDat())
-f<-rowSums(expDat()); g<-length(f[f==0])
-
-ff<-unlist(expDat())
-s<-sample(1:length(ff),100100,replace = FALSE)
-ff<-sort(ff[s])
-ff<-ff[1:100000]#trim off top 100 values
-par(mfrow=c(3,1))
-plot(1:length(ff),sort(ff), pch=".", xlab="linear uniform distribution", col="blue", ylab="sorted data", main=paste("Compare the data to data ranks  - ",round(length(ff[ff==0])/length(ff)*100,2),"% of data = 0  - ",round(g/nr*100,2),"% of genes = 0 in all samples"), cex.main=1.5)
-plot(sort(rnorm(100000, mean = 0, sd = 1)),sort(ff), pch=".", xlab="normal distribution", col="blue", ylab="sorted data", main="Compare the data to a normal distribution", cex.main=1.5)
-plot(sort(rnbinom(100000,1,0.1)),sort(ff), pch=".", xlab="negative binomial distribution", col="blue", ylab="sorted data", main="Compare the data to a negative binomial distribution", cex.main=1.5)
+output$distrs <- renderPlot({ 
+  nr<-nrow(expDat())
+  f<-rowSums(expDat()); g<-length(f[f==0])
+  ff<-unlist(expDat())
+  s<-sample(1:length(ff),100100,replace = FALSE)
+  ff<-sort(ff[s])
+  ff<-ff[1:100000]#trim off top 100 values
+  par(mfrow=c(3,1))
+  plot(1:length(ff),sort(ff), pch=".", xlab="linear uniform distribution", col="blue", ylab="sorted data", main=paste("Compare the data to data ranks  - ",round(length(ff[ff==0])/length(ff)*100,2),"% of data = 0  - ",round(g/nr*100,2),"% of genes = 0 in all samples"), cex.main=1.5)
+  plot(sort(rnorm(100000, mean = 0, sd = 1)),sort(ff), pch=".", xlab="normal distribution", col="blue", ylab="sorted data", main="Compare the data to a normal distribution", cex.main=1.5)
+  plot(sort(rnbinom(100000,1,0.1)),sort(ff), pch=".", xlab="negative binomial distribution", col="blue", ylab="sorted data", main="Compare the data to a negative binomial distribution", cex.main=1.5)
 })
 
 
@@ -302,6 +299,7 @@ plot(1:yl,sort(y))
 gp <- reactive({
 t<-paste(genes(),collapse = "+")   
 v_GO<-paste("http://gather.genome.duke.edu/?cmd=report&gene_box=",t,"&tax_id=9606&annot_type=gene_ontology&network=0&homologs=0",sep = "")
+print(v_GO)
 glg<-data.frame(read.delim(v_GO))
 glg
 })
@@ -323,7 +321,7 @@ output$t.tf <- renderDataTable({
 	data.frame(tp())
   })
 
-?renderPlot
+
 output$expMap <- renderPlot({    
     # Metagene based on genes in heatmap
     ## Below Cris added lines to calculate both the centroid and second-fourth PCs of the gene set shown in the heatmap
@@ -382,9 +380,6 @@ output$expMap <- renderPlot({
   #up.panel<-rbind(colorpanel(ncol(gdat),"green","black","red")[rank(ss_centroid)][oo], colorpanel(ncol(gdat),"green","black","red")[rank(ss)][oo],as.character(ct+4)[oo])
   up.panel<-rbind(colorpanel(ncol(gdat),"green","black","red")[rank(ss_centroid)][oo], colorpanel(ncol(gdat),"green","black","red")[rank(ss)][oo],as.character(ct[1,]+3)[oo],as.character(ct[2,]+6)[oo])
   rownames(up.panel)<-c("Centroid","1st PC","Group","Donor")
-  ct
-  #print(as.character(ct[1,]*4)[oo])
-  #print("asldnfasndf")
   print(up.panel)
 
   rowsep=1:nrow(gdat); colsep=1:ncol(gdat)

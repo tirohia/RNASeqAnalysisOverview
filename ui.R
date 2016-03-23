@@ -58,7 +58,6 @@ conditionalPanel(
 conditionalPanel(
   
 condition = "input.seltab == 'DT'",  
-  radioButtons("ctype","Correlation type?", c("Pearson", "Spearman"), selected="Pearson"),
   numericInput("trimmer.min", "Enter MINimum mean read number for a gene:", 10),
   numericInput("trimmer.max", "Enter MAXimum mean read number for a gene:", 20000),
   selectInput("norm", "Normalise?",
