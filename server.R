@@ -234,20 +234,18 @@ setwd(file.path(getwd()))
 
 
  output$s.c <- renderPlot({ 
-   output$s.c <- renderPlot({ 
-     if(input$ctype=="Spearman"){
-       c.c<-cor(expDat(), use="na.or.complete", method="spearman")}
-     else if(input$ctype=="Pearson"){
-       c.c<-cor(expDat(), use="na.or.complete", method="pearson")}
-     heatmap.2(c.c,trace="none",keysize = 1, key.title = "Correlation", mar=c(15,15), cexRow=0.7, cexCol=0.7, Rowv=T, Colv=T, main="Correlation structure of samples")
-     #counts.pca <- prcomp(t(log(e+1)),retx=TRUE)
-     #colList<-c("red","red","red","red","blue","blue","blue","blue","green","green","green","green")
-     #colList<-c("red","blue","green","orange","red","blue","green","orange","red","blue","green","orange")
-     #plot(counts.pca$x[,1],counts.pca$x[,3],pch=19,col =colList, xlab="PC 1",ylab="PC2")
-     
-   })
-    #c.c<-cor(expDat(), use="na.or.complete") 
-    #heatmap.2(c.c,trace="none",keysize = 1, key.title = "Correlation", mar=c(15,15), cexRow=0.7, cexCol=0.7, Rowv=T, Colv=T, main="Correlation structure of samples")
+  if(input$ctype=="Spearman"){
+    c.c<-cor(expDat(), use="na.or.complete", method="spearman")}
+  else if(input$ctype=="Pearson"){
+    c.c<-cor(expDat(), use="na.or.complete", method="pearson")}
+  heatmap.2(c.c,trace="none",keysize = 1, key.title = "Correlation", mar=c(15,15), cexRow=0.7, cexCol=0.7, Rowv=T, Colv=T, main="Correlation structure of samples")
+})
+
+output$pca <- renderPlot({ 
+  counts.pca <- prcomp(t(log(e+1)),retx=TRUE)
+  colList<-c("red","red","red","red","blue","blue","blue","blue","green","green","green","green")
+  colList<-c("red","blue","green","orange","red","blue","green","orange","red","blue","green","orange")
+  plot(counts.pca$x[,1],counts.pca$x[,3],pch=19,col =colList, xlab="PC 1",ylab="PC2")
 })
 
  output$m.sd <- renderPlot({   

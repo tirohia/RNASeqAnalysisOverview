@@ -49,7 +49,14 @@ selectInput("mtc", "Multiple testing correction:",list("None" = "none", "Benjami
                 
  br(),   
 
+
 conditionalPanel(
+  condition = "input.seltab == 'QC'",  
+  radioButtons("ctype","Correlation type?", c("Pearson", "Spearman"), selected="Pearson")
+),
+
+conditionalPanel(
+  
 condition = "input.seltab == 'DT'",  
   radioButtons("ctype","Correlation type?", c("Pearson", "Spearman"), selected="Pearson"),
   numericInput("trimmer.min", "Enter MINimum mean read number for a gene:", 10),
@@ -106,12 +113,12 @@ br(),
    # use an ID in the tabset panel to use in server logic to determine which of the current tabs is active
   mainPanel(
     tabsetPanel(id="seltab",
-    # add values to the tabpanels so we can see which one is currently active
-    tabPanel(h4("Trimming"), textOutput("diag.expl"), br() , plotOutput("s.c", height = 600, width = 800), br(),  plotOutput("m.hist", height = 600, width = 800), plotOutput("m.sd", height = 600, width = 800), plotOutput("box.pl", height = 600, width = 800), plotOutput("box.pll", height = 600, width = 800), value="DT"),
-    # , br(),  plotOutput("distrs", height = 1000, width = 800),plotOutput("gene.cor", height = 600, width = 800),br()
-    tabPanel(h4("Expresion Heatmap"), textOutput("dif.expl"),plotOutput("expMap", height = 1000, width = 1000), value="HM"),
-    tabPanel(h4("GO gene sets and pathways"), dataTableOutput("t.go"), value="GO"),
-    tabPanel(h4("Transcription Factor sets"), dataTableOutput("t.tf"), value="TF")
+      # add values to the tabpanels so we can see which one is currently active
+      tabPanel(h4("QC"), plotOutput("s.c", height = 600, width = 800),plotOutput("pca", height = 600, width = 800),value="QC"),
+      tabPanel(h4("Trimming"), textOutput("diag.expl"),   plotOutput("m.hist", height = 600, width = 800), plotOutput("m.sd", height = 600, width = 800), plotOutput("box.pl", height = 600, width = 800), plotOutput("box.pll", height = 600, width = 800), value="DT"),
+      tabPanel(h4("Expression Heatmap"), textOutput("dif.expl"),plotOutput("expMap", height = 1000, width = 1000), value="HM"),
+      tabPanel(h4("GO gene sets and pathways"), dataTableOutput("t.go"), value="GO"),
+      tabPanel(h4("Transcription Factor sets"), dataTableOutput("t.tf"), value="TF")
     ),width=10
   )
 )
