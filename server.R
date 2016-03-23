@@ -145,58 +145,73 @@ g.out <- rownames(topTable(fit2, number=input$max.number, genelist=fit2$genes, a
 
 ######### LIMMA voom workflow #########
 if(input$Anal.Type=="LV"){
-dge <- DGEList(counts=trim.e()) # don't use pre-normalised data in the Limma voom pipeline of course
+  dge <- DGEList(counts=trim.e()) # don't use pre-normalised data in the Limma voom pipeline of course
 
-dge <-calcNormFactors(dge, method="TMM") # set the default, this is also what is done if input$norm ="t"
-if(input$norm=="r"){dge <-calcNormFactors(dge, method="RLE")}
-if(input$norm=="uq"){dge <-calcNormFactors(dge, method="upperquartile")}
+  dge <-calcNormFactors(dge, method="TMM") # set the default, this is also what is done if input$norm ="t"
+  if(input$norm=="r"){dge <-calcNormFactors(dge, method="RLE")}
+  if(input$norm=="uq"){dge <-calcNormFactors(dge, method="upperquartile")}
 
-v <- voom(dge, design, plot=F) 
+  v <- voom(dge, design, plot=F) 
+  fit <- lmFit(v, design)
 
-fit <- lmFit(v, design)
-
-if(input$wc=="all possible"){
-fit2<-eBayes(fit)
-DEgenes<-rownames(topTable(fit2, number=input$max.number, genelist=fit2$genes, adjust.method=input$mtc, sort.by="F", resort.by=NULL, p.value=input$pSlider, lfc=input$lfcSlider))
-  if (length(DEgenes > 0)){
-    g.out <- DEgenes
+  if(input$wc=="all possible"){
+    fit2<-eBayes(fit)
+    DEgenes<-rownames(topTable(fit2, number=input$max.number, genelist=fit2$genes, adjust.method=input$mtc, sort.by="F", resort.by=NULL, p.value=input$pSlider, lfc=input$lfcSlider))
+    if (length(DEgenes > 0)){
+      g.out <- DEgenes
+    }
+    else {
+      g.out<-"No genes found to be differentially expressed. Altering required p-values might be neccesary"
+    }
   }
-  else {
-    g.out<-"No genes found to be differentially expressed. Altering reuqired p-values might be neccesary"
+  if(input$wc!="all possible") {
+    fit <- contrasts.fit(fit, cm())
+    fit2<-eBayes(fit)
+    DEgenes <- rownames(topTable(fit2, number=input$max.number, genelist=fit2$genes, adjust.method=input$mtc, sort.by="p", resort.by=NULL, p.value=input$pSlider, lfc=input$lfcSlider))
+    if (length(DEgenes > 0)){
+      g.out <- DEgenes
+    }
+    else {
+      g.out<-"No genes found to be differentially expressed. Altering required p-values might be neccesary"
+    }
   }
-
-}
-if(input$wc!="all possible") {
-fit <- contrasts.fit(fit, cm())
-fit2<-eBayes(fit)
-g.out <- rownames(topTable(fit2, number=input$max.number, genelist=fit2$genes, adjust.method=input$mtc, sort.by="p", resort.by=NULL, p.value=input$pSlider, lfc=input$lfcSlider))
-		}
 }
 	
 ######### EdgeR workflow #########
-if(input$Anal.Type=="EdgeR"){
-
-counts<-trim.e()
-counts<-counts[rowSums(counts)>0,] #rows of all zeros cause problems for  glmTreat
-y <- DGEList(counts=counts) # don't use pre-normalised data for EdgeR of course
-y<-calcNormFactors(y, method="TMM") # set the default, this is also what is done if input$norm ="t"
-if(input$norm=="r"){y<-calcNormFactors(y, method="RLE")}
-if(input$norm=="uq"){y<-calcNormFactors(y, method="upperquartile")}
-
-y <- estimateDisp(y,design)
-fit <- glmQLFit(y,design)
-
-if(input$wc=="all possible"){
-  print(paste("tr <- glmTreat(fit, contrast=NULL , lfc=",input$lfcSlider,")",sep=""))
-  print(input$lfcSlider)
-  tr <- glmTreat(fit, contrast=NULL , lfc=input$lfcSlider)
-}
-if(input$wc!="all possible") {
-  tr <- glmTreat(fit, contrast=cm() , lfc=input$lfcSlider)   	
-}	 
   
-g.out <- rownames(topTags(tr, n=input$max.number, adjust.method=input$mtc, sort.by="PValue", p.value=input$pSlider))
+if(input$Anal.Type=="EdgeR"){
+  counts<-trim.e()
+  counts<-counts[rowSums(counts)>0,] #rows of all zeros cause problems for  glmTreat
+  y <- DGEList(counts=counts) # don't use pre-normalised data for EdgeR of course
+  y<-calcNormFactors(y, method="TMM") # set the default, this is also what is done if input$norm ="t"
+  if(input$norm=="r"){y<-calcNormFactors(y, method="RLE")}
+  if(input$norm=="uq"){y<-calcNormFactors(y, method="upperquartile")}
 
+  y <- estimateDisp(y,design)
+  fit <- glmQLFit(y,design)
+
+  if(input$wc=="all possible"){
+    tr <- glmTreat(fit, contrast=NULL , lfc=input$lfcSlider)
+    DEgenes <- rownames(topTags(tr, n=input$max.number, adjust.method="BH", sort.by="PValue", p.value=input$pSlider))
+    if (length(DEgenes > 0)){
+      g.out <- DEgenes
+    }
+    else {
+      g.out<-"No genes found to be differentially expressed. Altering required p-values might be neccesary"
+    }
+    
+  }
+  
+  if(input$wc!="all possible") {
+    DEgenes <- rownames(topTags(tr, n=input$max.number, adjust.method="BH", sort.by="PValue", p.value=input$pSlider))
+    tr <- glmTreat(fit, contrast=cm() , lfc=input$lfcSlider)   	
+    if (length(DEgenes > 0)){
+      g.out <- DEgenes
+    }
+    else {
+      g.out<-"No genes found to be differentially expressed. Altering required p-values might be neccesary"
+    }
+  }	 
 }
   
 return(g.out)	
@@ -225,6 +240,11 @@ setwd(file.path(getwd()))
      else if(input$ctype=="Pearson"){
        c.c<-cor(expDat(), use="na.or.complete", method="pearson")}
      heatmap.2(c.c,trace="none",keysize = 1, key.title = "Correlation", mar=c(15,15), cexRow=0.7, cexCol=0.7, Rowv=T, Colv=T, main="Correlation structure of samples")
+     #counts.pca <- prcomp(t(log(e+1)),retx=TRUE)
+     #colList<-c("red","red","red","red","blue","blue","blue","blue","green","green","green","green")
+     #colList<-c("red","blue","green","orange","red","blue","green","orange","red","blue","green","orange")
+     #plot(counts.pca$x[,1],counts.pca$x[,3],pch=19,col =colList, xlab="PC 1",ylab="PC2")
+     
    })
     #c.c<-cor(expDat(), use="na.or.complete") 
     #heatmap.2(c.c,trace="none",keysize = 1, key.title = "Correlation", mar=c(15,15), cexRow=0.7, cexCol=0.7, Rowv=T, Colv=T, main="Correlation structure of samples")
